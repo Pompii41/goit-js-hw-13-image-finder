@@ -1,28 +1,19 @@
 import './styles.scss';
-import renderMarkup from './js/renderMarkup';
-import fetchCountries from './js/fetchCountries';
-import error from './js/pnotify';
-import debounce from 'lodash-es/debounce';
+import 'basiclightbox/dist/basicLightbox.min.css';
+import fetchImages from './js/fetchImages.js';
+import apiService from './js/apiService';
+import { searchForm, loadMore, gallery } from './js/refs';
 
-const searchInput = document.querySelector('.search-input');
-const countriesList = document.querySelector('.countries-list');
-const countryWrp = document.querySelector('.country-wrp');
+searchForm.addEventListener('submit', formHandler);
+loadMore.addEventListener('click', fetchImages);
 
-searchInput.addEventListener('input', debounce(searchInputHandler, 500));
+function formHandler(e) {
+  e.preventDefault();
+  const form = e.currentTarget;
+  apiService.setQuery = form.elements.query.value; //записываем значение инпута в переменную
+  form.reset(); //очистка запроса
+  gallery.innerHTML = ''; //очистка контейнера
+  apiService.resetPage(); //сбрасывание номера страницы на 1
 
-function searchInputHandler(e) {
-  const query = e.target.value;
-  countriesList.innerHTML = ' ';
-  countryWrp.innerHTML = ' ';
-  if (query.length > 1) {
-    fetchCountries(query)
-      .then(data => {
-        if (data.length > 0 && data.length <= 10) {
-          renderMarkup(data);
-        } else if (data.length > 10) {
-          error('Too many matches found. Please enter a more specific query!');
-        }
-      })
-      .catch(err => console.log(err));
-  }
+  fetchImages();
 }
